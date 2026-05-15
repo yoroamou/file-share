@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FileShare — Quick & Secure File Transfer</title>
+  <meta name="description" content="Share files instantly with a 6-digit code. Upload any file type and download anywhere." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <!-- Animated background blobs -->
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect width="32" height="32" rx="10" fill="url(#logoGrad)"/>
+          <path d="M16 8v10M12 14l4-4 4 4M9 22h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6C63FF"/>
+              <stop offset="1" stop-color="#48CFAD"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>FileShare</span>
+      </div>
+      <p class="header-tagline">Instant. Secure. Zero signup.</p>
+    </header>
+
+    <!-- Tab navigation -->
+    <nav class="tab-nav" role="tablist" aria-label="App sections">
+      <button class="tab-btn active" id="tab-upload" role="tab" aria-selected="true" aria-controls="panel-upload" onclick="switchTab('upload')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload
+      </button>
+      <button class="tab-btn" id="tab-download" role="tab" aria-selected="false" aria-controls="panel-download" onclick="switchTab('download')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </nav>
+
+    <main class="main-card">
+
+      <!-- ===== UPLOAD PANEL ===== -->
+      <section id="panel-upload" role="tabpanel" aria-labelledby="tab-upload" class="panel active">
+
+        <!-- Drop Zone -->
+        <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Click or drag files to upload">
+          <div class="drop-zone-inner" id="drop-zone-inner">
+            <div class="drop-icon" id="drop-icon">
+              <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+                <circle cx="26" cy="26" r="26" fill="url(#dzGrad)" opacity="0.15"/>
+                <path d="M26 34V18M18 26l8-8 8 8" stroke="url(#dzGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <defs>
+                  <linearGradient id="dzGrad" x1="0" y1="0" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#6C63FF"/><stop offset="1" stop-color="#48CFAD"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <p class="drop-title">Drag &amp; drop files here</p>
+            <p class="drop-subtitle">or click to browse — any file type, multiple files</p>
+            <input type="file" id="file-input" multiple hidden />
+            <button class="btn btn-outline" onclick="document.getElementById('file-input').click()" type="button">
+              Browse Files
+            </button>
+          </div>
+        </div>
+
+        <!-- File list preview -->
+        <ul id="file-list" class="file-list" hidden></ul>
+
+        <!-- Upload button -->
+        <button id="upload-btn" class="btn btn-primary" onclick="uploadFiles()" hidden type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Files
+        </button>
+
+        <!-- Upload progress -->
+        <div id="upload-progress" class="progress-wrap" hidden>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          <p class="progress-label" id="progress-label">Uploading…</p>
+        </div>
+
+        <!-- Result card -->
+        <div id="upload-result" class="result-card" hidden>
+          <div class="result-header">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#48CFAD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Files ready to share!</span>
+          </div>
+
+          <p class="result-label">Your share code</p>
+          <div class="code-display" id="result-code" aria-label="Share code" onclick="copyCode()">
+            <span id="code-chars"></span>
+            <button class="copy-btn" id="copy-btn" title="Copy code" aria-label="Copy share code">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+
+          <p class="result-label">Scan QR code</p>
+          <div class="qr-wrapper">
+            <img id="qr-img" src="" alt="QR code for file download" class="qr-img" />
+          </div>
+
+          <div class="result-meta" id="result-meta"></div>
+          <p class="result-expiry" id="result-expiry"></p>
+
+          <button class="btn btn-ghost" onclick="resetUpload()" type="button">Share another file</button>
+        </div>
+      </section>
+
+      <!-- ===== DOWNLOAD PANEL ===== -->
+      <section id="panel-download" role="tabpanel" aria-labelledby="tab-download" class="panel" hidden>
+        <div class="download-hero">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+            <circle cx="28" cy="28" r="28" fill="url(#dlGrad)" opacity="0.12"/>
+            <path d="M28 18v16M20 30l8 8 8-8" stroke="url(#dlGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="dlGrad" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6C63FF"/><stop offset="1" stop-color="#48CFAD"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <h2 class="download-title">Enter your share code</h2>
+          <p class="download-sub">Type the 6-character code you received to instantly download the file.</p>
+        </div>
+
+        <div class="code-input-group">
+          <div class="code-boxes" id="code-boxes" role="group" aria-label="Enter 6-character code">
+            <input class="code-box" id="cb0" maxlength="1" type="text" autocomplete="off" aria-label="Code character 1" />
+            <input class="code-box" id="cb1" maxlength="1" type="text" autocomplete="off" aria-label="Code character 2" />
+            <input class="code-box" id="cb2" maxlength="1" type="text" autocomplete="off" aria-label="Code character 3" />
+            <span class="code-sep" aria-hidden="true">–</span>
+            <input class="code-box" id="cb3" maxlength="1" type="text" autocomplete="off" aria-label="Code character 4" />
+            <input class="code-box" id="cb4" maxlength="1" type="text" autocomplete="off" aria-label="Code character 5" />
+            <input class="code-box" id="cb5" maxlength="1" type="text" autocomplete="off" aria-label="Code character 6" />
+          </div>
+        </div>
+
+        <button id="download-btn" class="btn btn-primary" onclick="downloadFile()" type="button" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+
+        <!-- File info preview -->
+        <div id="file-info-card" class="file-info-card" hidden></div>
+
+        <!-- Download error -->
+        <div id="download-error" class="error-toast" hidden></div>
+
+        <div class="divider"><span>or</span></div>
+        <p class="qr-hint">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><rect x="10" y="3" width="2" height="2"/><rect x="10" y="10" width="2" height="2"/><rect x="3" y="10" width="2" height="2"/><rect x="10" y="16" width="8" height="5"/></svg>
+          Scan the QR code from the sender's screen to open this page automatically with the code pre-filled.
+        </p>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <p>Files auto-expire after <strong>1 hour</strong> &bull; End-to-end temporary storage &bull; No account needed</p>
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
