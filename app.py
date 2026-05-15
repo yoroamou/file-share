@@ -100,7 +100,7 @@ def upload():
     )
     qr.add_data(download_url)
     qr.make(fit=True)
-    img = qr.make_image(fill_color="#6C63FF", back_color="white")
+    img = qr.make_image(fill_color="#222222", back_color="white")
 
     buf = io.BytesIO()
     # Access the underlying PIL Image to avoid qrcode's PyPNGImage stub conflict

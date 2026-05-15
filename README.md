@@ -1,7 +1,7 @@
 # 📁 FileShare
 
 > Instant, zero-signup file sharing with a 6-digit code and QR code.  
-> Built with **Python / Flask** — runs entirely on your local machine.
+> Built with **Python / Flask** — runs on your local machine or any server.
 
 ---
 
@@ -10,6 +10,7 @@
 - [Features](#-features)
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
+- [Production Deployment](#-production-deployment)
 - [API Reference](#-api-reference)
 - [Configuration](#️-configuration)
 - [Security Notes](#-security-notes)
@@ -29,6 +30,7 @@
 | 🗜️ | **Auto-Zip** — multiple files are bundled into a `.zip` on download |
 | ⏱️ | **Auto-Expiry** — all files are deleted automatically after 1 hour |
 | 👁️ | **Live Preview** — file details appear as you type the code |
+| 🚀 | **Production Ready** — ships with a `wsgi.py` entry point for Gunicorn |
 
 ---
 
@@ -37,12 +39,13 @@
 ```
 File-Share/
 ├── app.py                   # Flask backend — routes, QR generation, cleanup
+├── wsgi.py                  # WSGI entry point for production (Gunicorn / uWSGI)
 ├── requirements.txt         # Pinned Python dependencies
 ├── templates/
 │   └── index.html           # Single-page UI (Upload + Download tabs)
 ├── static/
 │   ├── css/
-│   │   └── style.css        # Dark-mode design system & animations
+│   │   └── style.css        # Monochrome dark design system & animations
 │   └── js/
 │       └── app.js           # Drag-drop, code boxes, XHR upload logic
 ├── uploads/                 # Temporary file storage (auto-created & cleaned)
@@ -103,6 +106,82 @@ python app.py
 
 ---
 
+## 🏭 Production Deployment
+
+Use `wsgi.py` as the entry point for any WSGI-compatible server. Never use Flask's built-in development server in production.
+
+### Gunicorn (recommended)
+
+```bash
+# Install (already in requirements.txt)
+pip install gunicorn
+
+# Run — 4 workers, bind to all interfaces on port 5000
+gunicorn wsgi:app --workers 4 --bind 0.0.0.0:5000
+
+# Run as a background daemon
+gunicorn wsgi:app --workers 4 --bind 0.0.0.0:5000 --daemon --access-logfile logs/access.log --error-logfile logs/error.log
+```
+
+### uWSGI
+
+```bash
+uwsgi --http 0.0.0.0:5000 --module wsgi:app --processes 4 --threads 2
+```
+
+### systemd service (Linux)
+
+Create `/etc/systemd/system/fileshare.service`:
+
+```ini
+[Unit]
+Description=FileShare Gunicorn Service
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/path/to/File-Share
+Environment="PATH=/path/to/File-Share/venv/bin"
+ExecStart=/path/to/File-Share/venv/bin/gunicorn wsgi:app --workers 4 --bind 0.0.0.0:5000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable fileshare
+sudo systemctl start fileshare
+sudo systemctl status fileshare
+```
+
+### Nginx reverse proxy (recommended in front of Gunicorn)
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    client_max_body_size 200M;
+
+    location / {
+        proxy_pass         http://127.0.0.1:5000;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 120s;
+    }
+
+    location /static/ {
+        alias /path/to/File-Share/static/;
+        expires 7d;
+    }
+}
+```
+
+---
+
 ## 🔌 API Reference
 
 | Method | Endpoint | Description |
@@ -155,15 +234,15 @@ python app.py
 
 ## 🛡️ Security Notes
 
-> ⚠️ This app runs Flask's **development server** — do **not** expose it to the public internet as-is.
+> ⚠️ Always use a production WSGI server (Gunicorn / uWSGI) + Nginx in front when exposing to the internet.
 
-For a production deployment:
+Additional hardening recommendations:
 
-- Use **Gunicorn** or **uWSGI** as the WSGI server
-- Place **Nginx** or **Caddy** in front as a reverse proxy
-- Set `UPLOAD_FOLDER` to a path outside the web root
+- Set `UPLOAD_FOLDER` to a path **outside** the web root
 - Add file-type allow-listing if you need to restrict uploads
-- Consider adding rate limiting (e.g. Flask-Limiter)
+- Add rate limiting (e.g. **Flask-Limiter**) to prevent abuse
+- Enable HTTPS via **Let's Encrypt / Certbot** with your Nginx config
+- Consider authentication if you want to restrict who can upload
 
 ---
 
@@ -173,6 +252,7 @@ For a production deployment:
 |---------|---------|---------|
 | `Flask` | 3.1.3 | Web framework & routing |
 | `Werkzeug` | 3.1.8 | WSGI utilities (used by Flask) |
+| `gunicorn` | 23.0.0 | Production WSGI server |
 | `qrcode` | 8.2 | QR code generation |
 | `Pillow` | 12.2.0 | Image rendering for QR codes |
 | `Jinja2` | 3.1.6 | HTML templating (used by Flask) |

@@ -12,3 +12,6 @@ MarkupSafe==3.0.3
 # QR code generation
 qrcode==8.2
 pillow==12.2.0
+
+# Production WSGI server
+gunicorn==23.0.0

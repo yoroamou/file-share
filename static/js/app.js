@@ -221,7 +221,7 @@ function copyCode() {
   if (!code) return;
   navigator.clipboard.writeText(code).then(() => {
     const btn = document.getElementById('copy-btn');
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#48CFAD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
     setTimeout(() => {
       btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
     }, 2000);
@@ -373,9 +373,9 @@ function showToast(msg) {
     toast.id = 'global-toast';
     toast.style.cssText = `
       position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
-      background:#1a1e2e;border:1.5px solid rgba(255,107,107,.4);color:#ff6b6b;
+      background:#161616;border:1.5px solid rgba(255,107,107,.3);color:#ff6b6b;
       padding:12px 24px;border-radius:50px;font-size:.87rem;font-weight:600;
-      box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:9999;
+      box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;
       transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s;
       opacity:0;pointer-events:none;white-space:nowrap;
     `;
