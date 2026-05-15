@@ -18,7 +18,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 file_store = {}
 store_lock = threading.Lock()
 
-EXPIRY_SECONDS = 3600  # 1 hour
+EXPIRY_SECONDS = 300  # 5 minutes
 
 
 def generate_code():
